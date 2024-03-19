@@ -1,0 +1,571 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.Form..Create(BaseForm)
+Gui.Form..Caption("GCG 6878 FMS FILE")
+Gui.Form..Size(357,71)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..AlwaysOnTop(False)
+Gui.Form..FontName("Tahoma")
+Gui.Form..FontSize(8.25)
+Gui.Form..ControlBox(True)
+Gui.Form..MaxButton(True)
+Gui.Form..MinButton(True)
+Gui.Form..MousePointer(0)
+Gui.Form..Moveable(True)
+Gui.Form..Sizeable(True)
+Gui.Form..ShowInTaskBar(True)
+Gui.Form..TitleBar(True)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form.txtFileLoc.Create(TextBox,"",True,309,20,0,9,11,True,0,"Tahoma",8.25,,1)
+Gui.Form.cmdFileBrw.Create(Button)
+Gui.Form.cmdFileBrw.Enabled(True)
+Gui.Form.cmdFileBrw.Visible(True)
+Gui.Form.cmdFileBrw.Zorder(0)
+Gui.Form.cmdFileBrw.Size(28,23)
+Gui.Form.cmdFileBrw.Position(323,9)
+Gui.Form.cmdFileBrw.Caption("^")
+Gui.Form.cmdFileBrw.FontName("Tahoma")
+Gui.Form.cmdFileBrw.FontSize(8.25)
+Gui.Form.cmdFileBrw.Event(Click,loadFolders)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.External.Include.Library("500030.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+f.Data.Datatable.Create("dtLines", True)
+f.Data.Datatable.AddColumn("dtLines", "TextLine", "String")
+f.Data.DataView.Create("dtLines", "dvLines", 22)
+'date
+f.Data.Datatable.Create("dtFMS", True)
+f.Data.Datatable.AddColumn("dtFMS", "Job", "String")
+f.Data.Datatable.AddColumn("dtFMS", "Suffix", "String")
+f.Data.Datatable.AddColumn("dtFMS", "Seq", "String")
+f.Data.Datatable.AddColumn("dtFMS", "NestID", "String")
+f.Data.Datatable.AddColumn("dtFMS", "CutTime", "Float")
+f.Data.Datatable.AddColumn("dtFMS", "Material", "String")
+f.Data.Datatable.AddColumn("dtFMS", "NamePlate", "String")
+f.Data.Datatable.AddColumn("dtFMS", "MatArea", "Float", 0)
+f.Data.Datatable.AddColumn("dtFMS", "Area", "Float", 0)
+f.Data.Datatable.AddColumn("dtFMS", "cutArea", "Float", 0)
+f.Data.Datatable.AddColumn("dtFMS", "Drops", "String")
+f.Data.Datatable.AddExpressionColumn("dtFMS", "CutPercentage", "Float", "IIF(Drops = 'D', 0, IIF(cutArea = 0, 0, Area/cutArea))")
+f.Data.Datatable.AddColumn("dtFMS", "RemArea", "Float", 0)
+f.Data.Datatable.AddExpressionColumn("dtFMS", "remAdder", "Float", "IIF(Drops = 'D', 0, CutPercentage*RemArea)")
+f.Data.Datatable.AddExpressionColumn("dtFMS", "completeArea", "Float", "IIF(Drops = 'D', 0, Area+remAdder)")
+f.Data.Datatable.AddExpressionColumn("dtFMS", "TotalPercentage", "Float", "IIF(Drops = 'D', 1, IIF(MatArea = 0, 0, completeArea/MatArea))")
+f.Data.Datatable.AddColumn("dtFMS", "Weight", "Float", 0)
+f.Data.Datatable.AddExpressionColumn("dtFMS", "totalWeight", "Float", "IIF(Drops = 'D', Weight, TotalPercentage*Weight)")
+f.Data.Datatable.AddColumn("dtFMS", "Issued", "String", "N")
+f.Data.Datatable.AddColumn("dtFMS", "FlexID", "String")
+
+
+f.Data.DataView.Create("dtFMS", "dvFMS", 22)
+'f.Data.Datatable.AddColumn("dtFMS", "Job", "String")
+
+f.Data.Datatable.Create("dtSave", True)
+f.Data.Datatable.AddColumn("dtSave", "Job", "String")
+f.Data.Datatable.AddColumn("dtSave", "Suffix", "String")
+f.Data.Datatable.AddColumn("dtSave", "Seq", "String")
+f.Data.Datatable.AddColumn("dtSave", "NestID", "String")
+f.Data.Datatable.AddColumn("dtSave", "CutTime", "Float")
+f.Data.Datatable.AddColumn("dtSave", "Material", "String")
+f.Data.Datatable.AddColumn("dtSave", "NamePlate", "String")
+f.Data.Datatable.AddColumn("dtSave", "MatArea", "Float", 0)
+f.Data.Datatable.AddColumn("dtSave", "Area", "Float")
+f.Data.Datatable.AddColumn("dtSave", "cutArea", "Float")
+f.Data.Datatable.AddColumn("dtSave", "CutPercentage", "Float", 0)
+f.Data.Datatable.AddColumn("dtSave", "RemArea", "Float", 0)
+f.Data.Datatable.AddColumn("dtSave", "remAdder", "Float", 0)
+f.Data.Datatable.AddColumn("dtSave", "completeArea", "Float", 0)
+f.Data.Datatable.AddColumn("dtSave", "TotalPercentage", "Float", 0)
+f.Data.Datatable.AddColumn("dtSave", "Weight", "Float", 0)
+f.Data.Datatable.AddColumn("dtSave", "totalWeight", "Float", 0)
+f.Data.Datatable.AddColumn("dtSave", "Issued", "String", "N")
+f.Data.Datatable.AddColumn("dtSave", "Lot", "String")
+f.Data.Datatable.AddColumn("dtSave", "Bin", "String")
+f.Data.Datatable.AddColumn("dtSave", "Heat", "String")
+f.Data.Datatable.AddColumn("dtSave", "Serial", "String")
+f.Data.Datatable.AddColumn("dtSave", "FlexID", "String")
+f.Data.Datatable.AddColumn("dtSave", "Drops", "String")
+
+'gui.Form.txtFileLoc.Text("C:\Users\aanazco\OneDrive - gssmail.com\WIP\PTMW\000339")
+gui.Form..Show
+
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+f.Intrinsic.UI.CloseWaitDialog
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project GCG_6878_FMS_FILE.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+
+f.Intrinsic.Control.End
+Program.Sub.ErrorMsg.End
+
+Program.Sub.cmdFileBrw_Click.Start
+v.Local.sFile.Declare
+v.Local.sText.Declare
+v.Local.sMainSections.Declare
+v.Local.sSheetInfo.Declare
+v.Local.sTemp.Declare
+
+v.Local.bControl.Declare(Boolean, False)
+v.Local.sTotalArea.Declare
+'v.Local.sAssembly.Declare
+v.Local.sTotalTime.Declare
+v.Local.fCutArea.Declare
+v.Local.fRem.Declare
+v.Local.fRemPer.Declare
+
+v.Local.sNestID.Declare
+v.Local.sMaterial.Declare
+v.Local.sThickness.Declare
+v.Local.sSizeX.Declare
+v.Local.sSizeY.Declare
+v.Local.sPlateName.Declare
+v.Local.sNumSheets.Declare
+
+v.Local.sSplit.Declare
+
+v.Local.sComponents.Declare
+v.Local.sCompLines.Declare
+v.Local.iCnt.Declare
+v.Local.sWOPart.Declare
+v.Local.sAssembly.Declare
+
+v.Local.sMaterialType.Declare
+v.Local.sMaterialName.Declare
+
+v.Local.sSuffixes.Declare
+v.Local.sWOs.Declare
+v.Local.sSQL.Declare
+v.Local.sWO.Declare
+v.Local.dDateRet.Declare
+v.Local.sSeq.Declare
+v.Local.iSeqTemp.Declare
+v.Local.sPart.Declare
+v.Local.sDateDue.Declare
+v.Local.sStartDue.Declare
+v.Local.sParams.Declare
+
+v.Local.fQty.Declare
+v.Local.fWeight.Declare
+v.Local.sFilter.Declare
+v.Local.fSheetArea.Declare
+v.Local.sSMG.Declare
+
+v.Local.fPartNumberMult.Declare
+v.Local.fTotalA.Declare
+
+v.Local.sDateLib.Declare
+
+v.Local.fX.Declare
+v.Local.fY.Declare
+v.Local.fXY.Declare
+
+v.Local.sIssue.Declare
+v.Local.fTemp1.Declare
+v.Local.fTemp2.Declare
+v.Local.fTempR.Declare
+v.Local.sDropFlg.Declare(String, " ")
+V.Local.sDropW.Declare
+v.Local.sRet.Declare
+f.Intrinsic.Control.Try
+'Try something
+	'Function.Intrinsic.Debug.Stop
+	'f.Intrinsic.UI.ShowOpenFileDialog("", "", v.Local.sFile)
+	v.Local.sIssue.Set("N")
+	'Read
+	v.Local.sFile.Set(v.Args.sFile)
+	f.Intrinsic.Control.If(v.Local.sFile, =, "***CANCEL***")
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.EndIf
+	'Read File
+	'gui.Form.txtFileLoc.Text(v.Local.sFile)
+	'Read File
+	f.Intrinsic.File.File2String(v.Local.sFile, v.Local.sText)
+	'Split components (Main 2 sections)
+	f.Intrinsic.String.Split(v.Local.sText, "#COMPONENTS", v.Local.sMainSections)
+	'Main Section 0 is Main Info (Sheets)
+	f.Intrinsic.String.Split(v.Local.sMainSections(0), v.Ambient.NewLine, v.Local.sSheetInfo)
+		f.Intrinsic.String.Split(v.Local.sSheetInfo(8), " : ", v.Local.sTemp)
+		v.Local.sNestID.Set(v.Local.sTemp(1))		
+		
+		f.Intrinsic.String.Split(v.Local.sSheetInfo(13), " : ", v.Local.sTemp)
+		v.Local.sMaterial.Set(v.Local.sTemp(1))
+		'Get type of Material
+		f.Intrinsic.String.Split(v.Local.sMaterial, "_", v.Local.sTemp)
+		v.Local.sMaterialType.Set(v.Local.sTemp(0))
+		'Up Case, Trim
+		f.Intrinsic.String.UCase(v.Local.sMaterialType, v.Local.sMaterialType)
+		f.Intrinsic.String.Trim(v.Local.sMaterialType, v.Local.sMaterialType)
+		f.Intrinsic.Control.If(v.Local.sMaterialType, =, "AL")
+			v.Local.sMaterialName.Set("2")
+		f.Intrinsic.Control.ElseIf(v.Local.sMaterialType, =, "SS")
+			v.Local.sMaterialName.Set("1")
+		f.Intrinsic.Control.Else
+			v.Local.sMaterialName.Set("3")
+		f.Intrinsic.Control.EndIf
+		
+		f.Intrinsic.String.Split(v.Local.sSheetInfo(14), " : ", v.Local.sTemp)
+		v.Local.sThickness.Set(v.Local.sTemp(1))
+		'Get type of Thickness
+		f.Intrinsic.Control.If(v.Local.sMaterialType, =, "SS")
+			f.Intrinsic.Control.If(v.Local.sThickness, =, "0.250")
+				f.Intrinsic.String.Build("{0}250", v.Local.sMaterialType, v.Local.sTemp(1), v.Local.sMaterialType)
+			f.Intrinsic.Control.Else
+				'Check for Gauge.
+			f.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.Else
+			f.Intrinsic.String.Split(v.Local.sThickness, ".", v.Local.sTemp)
+			f.Intrinsic.String.LPad(v.Local.sTemp(1), "0", 3, v.Local.sTemp(1))
+			f.Intrinsic.String.Build("{0}{1}", v.Local.sMaterialType, v.Local.sTemp(1), v.Local.sMaterialType)
+		f.Intrinsic.Control.EndIf
+		
+		f.Intrinsic.String.Split(v.Local.sSheetInfo(15), " : ", v.Local.sTemp)
+		v.Local.sSizeX.Set(v.Local.sTemp(1))
+		
+		f.Intrinsic.String.Split(v.Local.sSheetInfo(16), " : ", v.Local.sTemp)
+		v.Local.sSizeY.Set(v.Local.sTemp(1))
+		
+		f.Intrinsic.String.Split(v.Local.sSheetInfo(17), " :", v.Local.sTemp)
+		v.Local.sPlateName.Set(v.Local.sTemp(1))
+		f.Intrinsic.String.UCase(v.Local.sPlateName, v.Local.sPlateName)
+		
+		f.Intrinsic.String.Split(v.Local.sSheetInfo(18), " : ", v.Local.sTemp)
+		v.Local.sNumSheets.Set(v.Local.sTemp(1))
+	'Get XY
+	f.Intrinsic.String.Split(v.Local.sSheetInfo(15), " : ", v.Local.sTemp)
+	f.Intrinsic.Control.If(v.Local.sTemp(1).IsNumeric)
+		v.Local.fX.Set(v.Local.sTemp(1))
+	f.Intrinsic.Control.Else
+		v.Local.fX.Set(0)
+	f.Intrinsic.Control.EndIf
+	f.Intrinsic.String.Split(v.Local.sSheetInfo(16), " : ", v.Local.sTemp)
+	f.Intrinsic.Control.If(v.Local.sTemp(1).IsNumeric)
+		v.Local.fy.Set(v.Local.sTemp(1))
+	f.Intrinsic.Control.Else
+		v.Local.fy.Set(0)
+	f.Intrinsic.Control.EndIf
+	f.Intrinsic.Math.Mult(v.Local.fX, v.Local.fY, v.Local.fXY)
+	'Main Section 1 is divided into components, will Split it fist on time which is the last line of each group
+
+	'New Code
+	'f.Intrinsic.String.Split(v.Local.sMainSections(1), v.Ambient.NewLine, v.Local.sComponents)
+	f.Data.Datatable.CreateFromString("dtTemp", v.Local.sMainSections(1), "TextLine", "String", "*!*", v.Ambient.NewLine)
+	f.Data.Datatable.DeleteRow("dtLines")
+	f.Data.Datatable.AcceptChanges("dtLines")
+	f.Data.Datatable.Merge("dtTemp", "dtLines", false, 2)
+	f.Data.Datatable.AcceptChanges("dtLines")
+	f.Data.Datatable.Close("dtTemp")
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	'Part 
+		f.Intrinsic.String.Build("Select top 1 Part from V_Inventory_All where UCASE(Description_3) = '{0}'", v.Local.sPlateName, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sPart)
+		f.Intrinsic.Control.If(v.Local.sPart.Trim, =, "")
+			v.Local.sPart.Set("DROP-REMNANT")
+			f.Intrinsic.String.RPad(v.Local.sPart, " ", 20, v.Local.sPart)
+			v.Local.sPart.Set(v.Local.sPart.PSQLFriendly)
+			v.Local.sDropFlg.Set("D")
+		f.Intrinsic.Control.EndIf
+		'Weight
+		f.Intrinsic.String.Build("Select Top 1 LBS from V_Inventory_All where Part = '{0}'", v.Local.sPart, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.fWeight)
+		'Weight time Sheets
+		v.Local.fQty.Set(v.Local.sNumSheets)
+		f.Intrinsic.Math.Mult(v.Local.fQty, v.Local.fWeight, v.Local.fWeight)
+		'Part Area
+		f.Intrinsic.String.Build("Select top 1 Width*Length from V_Inventory_All where Part = '{0}'", v.Local.sPart, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.fSheetArea)
+		f.Intrinsic.Math.Mult(v.Local.fQty, v.Local.fSheetArea, v.Local.fSheetArea)
+		'Check if FMS exists
+		f.Intrinsic.String.Build("Select top 1 NestID from GCG_6878_FMS_NEST where NestID = '{0}'", v.Local.sNestID, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sRet)
+		f.Intrinsic.String.Trim(v.Local.sRet, v.Local.sRet)
+		f.Intrinsic.Control.If(v.Local.sRet.Trim, <>, "")
+			f.Intrinsic.String.Build("Nest {0} has already been uploaded. This file will be skipped.", v.Local.sNestID, v.Local.sRet)
+			f.Intrinsic.UI.Msgbox(v.Local.sRet)
+			f.ODBC.Connection!con.Close
+			f.Intrinsic.Control.GoTo("SkipFile")
+		f.Intrinsic.Control.EndIf
+	f.ODBC.Connection!con.Close
+	
+	'Clear Tables
+	f.Data.Datatable.DeleteRow("dtFMS")
+	f.Data.Datatable.AcceptChanges("dtFMS")
+	f.Data.Datatable.DeleteRow("dtSave")
+	f.Data.Datatable.AcceptChanges("dtSave")
+	
+'	'Check empty blank Parts
+	f.Intrinsic.Control.If(v.Local.sPart.Trim, =, "")
+		v.Local.sIssue.Set("Y")
+	f.Intrinsic.Control.EndIf
+	
+'	f.Intrinsic.Control.If(v.Local.sNestID, =, )
+'	
+'	f.Intrinsic.Control.EndIf
+	v.Local.iCnt.Set(0)
+	v.Local.bControl.Set(False)
+	'Loop through while
+	f.Intrinsic.Control.DoUntil(v.Local.bControl)
+		'check if lines exits
+		f.Intrinsic.String.Build("TextLine like '({0})%'", v.Local.iCnt, v.Local.sFilter)
+		f.Data.DataView.SetFilter("dtLines", "dvLines", v.Local.sFilter)
+		f.Intrinsic.Control.If(v.DataView.dtLines!dvLines.RowCount, =, 0)
+			v.Local.bControl.Set(True)
+			f.Intrinsic.Control.GoTo("Skip")
+		f.Intrinsic.Control.EndIf
+		'get Part Number
+		f.Intrinsic.String.Split(v.DataView.dtLines!dvLines(0).TextLine!FieldValTrim, ",", v.Local.sTemp)
+		f.Intrinsic.String.Split(v.Local.sTemp(1), " = ", v.Local.sTemp)
+		f.Intrinsic.Control.If(v.Local.sTemp(1).Trim, =, "")	
+			v.Local.fPartNumberMult.Set(0)
+		f.Intrinsic.Control.Else
+			v.Local.fPartNumberMult.Set(v.Local.sTemp(1))
+		f.Intrinsic.Control.EndIf
+			
+		'Total Area
+		f.Intrinsic.String.Build("TextLine like '({0}) TOTAL AREA : %'", v.Local.iCnt, v.Local.sFilter)
+		f.Data.DataView.SetFilter("dtLines", "dvLines", v.Local.sFilter)
+		f.Intrinsic.String.Split(v.DataView.dtLines!dvLines(0).TextLine!FieldValTrim, " : ", v.Local.sTemp)
+		v.Local.sTotalArea.Set(v.Local.sTemp(1))
+		v.Local.fTotalA.Set(v.Local.sTotalArea)
+		
+		f.Intrinsic.Math.Mult(v.Local.fPartNumberMult, v.Local.fTotalA, v.Local.fTotalA)
+		f.Intrinsic.Math.Mult(v.Local.fTotalA, v.Local.fQty, v.Local.fTotalA)
+		v.Local.sTotalArea.Set(v.Local.fTotalA)
+		'Assembly
+		f.Intrinsic.String.Build("TextLine like '({0}) ASSEMBLY :%'", v.Local.iCnt, v.Local.sFilter)
+		f.Data.DataView.SetFilter("dtLines", "dvLines", v.Local.sFilter)
+		f.Intrinsic.Control.If(v.DataView.dtLines!dvLines.RowCount, =, 0)
+			v.Local.sWO.Set("     ")
+			v.Local.sSuffixes.Set("   ")
+			v.Local.sSeq.Set("     ")
+			f.Intrinsic.Control.GoTo("Skip")
+		f.Intrinsic.Control.EndIf
+		f.Intrinsic.String.Split(v.DataView.dtLines!dvLines(0).TextLine!FieldValTrim, " : ", v.Local.sTemp)
+		f.Intrinsic.Control.If(v.Local.sTemp.UBound, <, 1)
+			v.Local.sWO.Set("     ")
+			v.Local.sSuffixes.Set("   ")
+			v.Local.sSeq.Set("     ")
+			f.Intrinsic.Control.GoTo("Skip")
+		f.Intrinsic.Control.EndIf
+		v.Local.sAssembly.Set(v.Local.sTemp(1))
+		f.Intrinsic.String.Split(v.Local.sAssembly, "-", v.Local.sTemp)
+		v.Local.sWO.Set(v.Local.sTemp(0))
+		v.Local.sSuffixes.Set(v.Local.sTemp(1))
+		v.Local.sSeq.Set(v.Local.sTemp(2))
+		
+		f.Intrinsic.Control.Label("SkipWO")
+		'Total Time
+		f.Intrinsic.String.Build("TextLine like '({0}) TOTAL TIME : %'", v.Local.iCnt, v.Local.sFilter)
+		f.Data.DataView.SetFilter("dtLines", "dvLines", v.Local.sFilter)
+		f.Intrinsic.String.Split(v.DataView.dtLines!dvLines(0).TextLine!FieldValTrim, " : ", v.Local.sTemp)
+		v.Local.sTotalTime.Set(v.Local.sTemp(1))
+		v.Local.fTempR.Set(v.Local.sTotalTime.Float)
+		f.Intrinsic.Math.Mult(v.Local.fTempR, v.Local.fQty, v.Local.fPartNumberMult, v.Local.fTempR)
+		v.Local.sTotalTime.Set(v.Local.fTempR)
+		
+		'Drop Weight
+		f.Intrinsic.String.Build("TextLine like '({0}) TOTAL WEIGHT : %'", v.Local.iCnt, v.Local.sFilter)
+		f.Data.DataView.SetFilter("dtLines", "dvLines", v.Local.sFilter)
+		f.Intrinsic.String.Split(v.DataView.dtLines!dvLines(0).TextLine!FieldValTrim, " : ", v.Local.sTemp)
+		v.Local.sDropW.Set(v.Local.sTemp(1))
+		f.Intrinsic.Control.If(v.Local.sDropFlg.Trim, =, "D")
+			f.Intrinsic.Math.Mult(v.Local.fQty, v.Local.sDropW.Float, v.Local.fPartNumberMult, v.Local.fWeight)
+			'v.Local.fWeight.Set(v.Local.sDropW.Float)
+		f.Intrinsic.Control.EndIf
+		
+		'f.Intrinsic.Math.Mult(v.Local.fWeight,  v.Local.fWeight)
+		
+		'Check if suffix exits
+		f.Intrinsic.String.Build("Job = '{0}' and Suffix = '{1}' and Seq = '{2}' and NestID = '{3}'", v.Local.sWO, v.Local.sSuffixes, v.Local.sSeq, v.Local.sNestID, v.Local.sFilter)
+		f.Data.DataView.SetFilter("dtFMS", "dvFMS", v.Local.sFilter)
+		
+		f.Intrinsic.Control.If(v.DataView.dtFMS!dvFMS.RowCount, =, 1)
+			'Add values to previues row.
+			'Area
+			v.Local.fTemp1.Set(v.DataView.dtFMS!dvFMS(0).Area!FieldVal)
+			v.Local.fTemp2.Set(v.Local.fTotalA.Float)
+			f.Intrinsic.Math.Add(v.Local.fTemp1, v.Local.fTemp2, v.Local.fTempR)
+			v.Local.fTotalA.Set(v.Local.fTempR)
+			'Cut TIme
+			v.Local.fTemp1.Set(v.DataView.dtFMS!dvFMS(0).CutTime!FieldVal)
+			v.Local.fTemp2.Set(v.Local.sTotalTime.Float)
+			f.Intrinsic.Math.Add(v.Local.fTemp1, v.Local.fTemp2, v.Local.fTempR)
+			
+			f.Intrinsic.Math.Mult(v.Local.fTempR, v.Local.fQty, v.Local.fPartNumberMult, v.Local.fTempR)
+			v.Local.sTotalTime.Set(v.Local.fTempR)
+			'Change Value
+			f.Data.DataView.SetValue("dtFMS", "dvFMS", 0, "Area", v.Local.fTotalA, "CutTime", v.Local.sTotalTime)
+			
+		f.Intrinsic.Control.Else
+			'Add Row
+			f.Data.Datatable.AddRow("dtFMS", "Job", v.Local.sWO, "Suffix", v.Local.sSuffixes, "Seq", v.Local.sSeq, "NestID", v.Local.sNestID, "Material", v.Local.sPart, "NamePlate", v.Local.sPlateName, "Area", v.Local.fTotalA, "CutTime", v.Local.sTotalTime, "MatArea", v.Local.fSheetArea, "Weight", v.Local.fWeight, "Issued", v.Local.sIssue, "Drops", v.Local.sDropFlg)
+		f.Intrinsic.Control.EndIf
+		
+		f.Data.DataTable.AcceptChanges("dtFMS")
+		f.Data.DataView.SetFilter("dtFMS", "dvFMS", "")
+		
+		f.Intrinsic.Control.Label("Skip")
+		f.Intrinsic.Math.Add(v.Local.iCnt, 1, v.Local.iCnt)		
+	f.Intrinsic.Control.Loop
+	
+		'Check empty blank Parts
+	f.Intrinsic.Control.If(v.Local.sPart.Trim, =, "")
+		f.Data.DataTable.SetValue("dtFMS", -1, "MatArea", v.Local.fXY)
+		v.Local.fSheetArea.Set(v.Local.fXY)
+	f.Intrinsic.Control.EndIf
+
+	'Calculate CutArea
+	f.Data.Datatable.Compute("dtFMS", "Sum(Area)", "", v.Local.fCutArea)
+	f.Intrinsic.Math.Sub(v.Local.fSheetArea, v.Local.fCutArea, v.Local.fRem)
+
+	'set variables
+	f.Data.Datatable.SetValue("dtFMS", -1, "RemArea", v.Local.fRem, "cutArea", v.Local.fCutArea)
+
+	'Get Suffixes
+	f.Data.DataView.ToString("dtFMS", "dvFMS", "Suffix", "*!*", "','", v.Local.sSuffixes)
+	'Set Data
+	'Get Earliest Date	
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.Data.Dictionary.CreateFromSQL("binDict", "con", "Select Part, Bin from Inventory_Mstr")
+		f.Data.Dictionary.SetDefaultReturn("binDict", "")
+		
+		'Save FMS
+		f.Data.Datatable.AcceptChanges("dtFMS")
+		f.Data.Datatable.Merge("dtFMS", "dtSave", false, 2)
+		f.Data.Datatable.AcceptChanges("dtSave")
+		f.Data.Datatable.FillFromDictionary("dtSave", "binDict", "Material", "Bin")
+		f.Data.Dictionary.Close("binDict")
+		f.Data.Datatable.AcceptChanges("dtSave")
+		
+		f.Data.Datatable.SaveToDB("dtSave", "con", "GCG_6878_FMS_NEST", "Job*!*Suffix*!*Seq*!*NestID", 256)
+	f.ODBC.Connection!con.Close
+	
+	f.Intrinsic.Control.If(v.Local.sPart.Trim, =, "")
+		f.Intrinsic.Control.GoTo("SkipFile")
+	f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.If(v.DataTable.dtSave.RowCount, =, 0)
+		f.Intrinsic.Control.GoTo("SkipFile")
+	f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.If(v.Local.sWO.Trim, =, "")
+		v.Local.sWO.Set(v.DataTable.dtSave(0).Job!FieldValTrim)
+	f.Intrinsic.Control.EndIf
+	
+	'New 
+	f.ODBC.Connection!con.OpenCompanyConnection
+	
+		f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.dtSave.RowCount--, 1)
+			v.Local.sWO.Set(v.DataTable.dtSave(v.Local.iCnt).Job!FieldValTrim)
+			v.Local.sSuffixes.Set(v.DataTable.dtSave(v.Local.iCnt).Suffix!FieldValTrim)
+			v.Local.fWeight.Set(v.DataTable.dtSave(v.Local.iCnt).TotalWeight!FieldValTrim)
+			f.Intrinsic.Control.If(v.Local.sWO.Trim, <>, "P81481")
+				f.Intrinsic.Control.GoTo("NextJobTEST")
+			f.Intrinsic.Control.EndIf
+			'Get Dates
+			f.Intrinsic.String.Build("Select Top 1 Date_Start from Job_Operations where Job = '{0}' and Suffix in ('{1}') and LMO = 'M' order by Date_Start asc", v.Local.sWO, v.Local.sSuffixes, v.Local.sSQL)
+			f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sStartDue)
+			
+			f.Intrinsic.String.Build("Select Top 1 Date_Due from V_Job_Operations where Job = '{0}' and Suffix in ('{1}') and LMO = 'M' order by Date_Due asc", v.Local.sWO, v.Local.sSuffixes, v.Local.sSQL)
+			f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.dDateRet)
+			f.Intrinsic.Date.DateAdd("D", -7, v.Local.dDateRet, v.Local.dDateRet)
+			f.Intrinsic.String.Format(v.Local.dDateRet, "MMDDYY", v.Local.sDateDue)
+			f.Intrinsic.String.Format(v.Local.dDateRet, "YYMMDD", v.Local.sDateLib)
+			'Top 
+			f.Intrinsic.String.Build("Select Top 1 Seq from Job_Operations where Job = '{0}' and Suffix = '{1}' and Seq < '9000' order by Seq desc", v.Local.sWO, v.Local.sSuffixes, v.Local.sSQL)
+			f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sSeq)
+			v.Local.iSeqTemp.Set(v.Local.sSeq)
+			f.Intrinsic.Math.Add(v.Local.iSeqTemp, 1, v.Local.iSeqTemp)
+			f.Intrinsic.String.LPad(v.Local.iSeqTemp, "0", 6, v.Local.sSeq)
+			
+			'Add Operations
+			f.Intrinsic.String.Build("Insert into  Job_Operations (Job, Suffix, Seq, LMO, Description, UM, Part, Hours_estimated, Date_due, Units_Open, Units_Complete, Percent_Complete, Units_Scrap, Units_Committed, Dollars_Committed, Setup, Units, Burden, Rate_burden, Hours_Actual, Dollars_Estimated, Dollars_Actual ) Values ('{0}', '{1}', '{2}', '{3}', '{4}', 'EA', '{5}', '{6}', '{7}', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00')", v.Local.sWO, v.Local.sSuffixes, v.Local.sSeq, "M", v.Local.sPlateName, v.Local.sPart, v.Local.fWeight, v.Local.sDateDue, v.Local.sSQL)
+			
+			f.ODBC.Connection!con.Execute(v.Local.sSQL)
+
+			'Reschedule
+			f.Intrinsic.String.Build("{0}!*!{1}!*!{2}!*!{3}!*!{4}!*!B", v.Local.sDateDue, v.Local.sDateDue, v.Local.sWO, v.Local.sSuffixes, v.Local.sSeq, v.Local.sParams)
+			f.Global.General.CallWrapperSync("500030", v.Local.sParams)
+			
+			f.Intrinsic.Control.Label("NextJobTEST")
+		f.Intrinsic.Control.Next(v.Local.iCnt)
+	f.ODBC.Connection!con.Close
+	
+	f.Intrinsic.Control.Label("SkipFile")
+	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdFileBrw_Click.End
+
+Program.Sub.loadFolders.Start
+v.Local.sFolder.Declare
+v.Local.iCnt.Declare
+v.Local.sRet.Declare
+v.Local.sPath.Declare
+f.Intrinsic.Control.Try
+'Try something
+	v.Local.sFolder.Set(v.Screen.Form!txtFileLoc.Text)
+	f.Intrinsic.Control.If(v.Local.sFolder.Trim, =, "")
+		f.Intrinsic.UI.FolderBrowser("FMS FOLDER", , v.Local.sFolder)
+		f.Intrinsic.Control.If(v.Local.sFolder.Trim, =, "***CANCEL***")
+			f.Intrinsic.Control.End
+		f.Intrinsic.Control.EndIf
+		gui.Form.txtFileLoc.Text(v.Local.sFolder)
+	f.Intrinsic.Control.EndIf
+	f.Intrinsic.UI.InvokeWaitDialog("Reading FMS Files, plase wait.")
+	f.Intrinsic.String.Build("{0}\", v.Local.sFolder, v.Local.sFolder)
+	f.Intrinsic.File.GetFileList(v.Local.sFolder, 16, v.Local.sRet)
+	f.Intrinsic.String.Split(v.Local.sRet, ":", v.Local.sRet)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sRet.UBound, 1)
+		f.Intrinsic.String.Build("{0}{1}\", v.Local.sFolder, v.Local.sRet(v.Local.iCnt), v.Local.sPath)
+		f.Intrinsic.Control.CallSub("readDir", "sFolder", v.Local.sPath)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	f.Intrinsic.Control.End
+	'f.Intrinsic.Control.CallSub("500030Sync")
+	f.Intrinsic.UI.CloseWaitDialog
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.loadFolders.End
+
+Program.Sub.readDir.Start
+v.Local.sFolder.Declare
+v.Local.sDir.Declare
+v.Local.sExt.Declare
+v.Local.sPath.Declare
+v.Local.iCnt.Declare
+f.Intrinsic.Control.Try
+	v.Local.sFolder.Set(v.Args.sFolder)
+	f.Intrinsic.File.GetFileList(v.Local.sFolder, v.Local.sDir)
+	f.Intrinsic.String.Split(v.Local.sDir, ":", v.Local.sDir)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sDir.UBound, 1)
+		f.Intrinsic.File.GetExtensionComponent(v.Local.sDir(v.Local.iCnt), v.Local.sExt)
+		f.Intrinsic.Control.If(v.Local.sExt.UCase, =, "FMS")
+			f.Intrinsic.String.Build("{0}{1}", v.Local.sFolder, v.Local.sDir(v.Local.iCnt), v.Local.sPath)
+			f.Intrinsic.Control.CallSub(cmdFileBrw_Click, "sFile", v.Local.sPath)
+		f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.readDir.End
+
+Program.Sub.Form_UnLoad.Start
+f.Intrinsic.Control.End
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$aanazco$}$20230509174032675$}$7aQAV3Tor/tR9bkuakHbuzQlHVuXCGOzyFZcjWvxl2wU2HLZ8DHQl3uz/AWfVf9WKKjwFietOW0=
+Program.Sub.Comments.End
