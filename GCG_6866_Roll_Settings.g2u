@@ -1,0 +1,204 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.Form..Create(BaseForm)
+Gui.Form..Caption("Roll Form Settings")
+Gui.Form..Size(354,163)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..AlwaysOnTop(False)
+Gui.Form..FontName("Tahoma")
+Gui.Form..FontSize(8.25)
+Gui.Form..ControlBox(True)
+Gui.Form..MaxButton(True)
+Gui.Form..MinButton(True)
+Gui.Form..MousePointer(0)
+Gui.Form..Moveable(True)
+Gui.Form..Sizeable(True)
+Gui.Form..ShowInTaskBar(True)
+Gui.Form..TitleBar(True)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form.frame1.Create(Frame)
+Gui.Form.frame1.Enabled(True)
+Gui.Form.frame1.Visible(True)
+Gui.Form.frame1.Zorder(0)
+Gui.Form.frame1.Size(345,122)
+Gui.Form.frame1.Position(4,4)
+Gui.Form.frame1.Caption("")
+Gui.Form.frame1.FontName("Tahoma")
+Gui.Form.frame1.FontSize(8.25)
+Gui.Form.lbl1.Create(Label,"XML Location",True,62,13,0,5,5,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lbl1.BorderStyle(0)
+Gui.Form.lbl1.Parent("frame1")
+Gui.Form.txtLoc.Create(TextBox,"",True,297,20,0,5,20,True,0,"Tahoma",8.25,,1)
+Gui.Form.txtLoc.Parent("frame1")
+Gui.Form.lbl2.Create(Label,"XML Destination",True,76,13,0,5,45,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lbl2.BorderStyle(0)
+Gui.Form.lbl2.Parent("frame1")
+Gui.Form.txtDest.Create(TextBox,"",True,297,20,0,5,60,True,0,"Tahoma",8.25,,1)
+Gui.Form.txtDest.Parent("frame1")
+Gui.Form.cmdDest.Create(Button)
+Gui.Form.cmdDest.Enabled(True)
+Gui.Form.cmdDest.Visible(True)
+Gui.Form.cmdDest.Zorder(0)
+Gui.Form.cmdDest.Size(29,23)
+Gui.Form.cmdDest.Position(306,58)
+Gui.Form.cmdDest.Caption("")
+Gui.Form.cmdDest.FontName("Tahoma")
+Gui.Form.cmdDest.FontSize(8.25)
+Gui.Form.cmdDest.SvgPicture("icon_browser_color")
+Gui.Form.cmdDest.Parent("frame1")
+Gui.Form.cmdDest.Event(Click,cmdDest_Click)
+Gui.Form.cmdLoc.Create(Button)
+Gui.Form.cmdLoc.Enabled(True)
+Gui.Form.cmdLoc.Visible(True)
+Gui.Form.cmdLoc.Zorder(0)
+Gui.Form.cmdLoc.Size(29,23)
+Gui.Form.cmdLoc.Position(306,18)
+Gui.Form.cmdLoc.Caption("")
+Gui.Form.cmdLoc.FontName("Tahoma")
+Gui.Form.cmdLoc.FontSize(8.25)
+Gui.Form.cmdLoc.SvgPicture("icon_browser_color")
+Gui.Form.cmdLoc.Parent("frame1")
+Gui.Form.cmdLoc.Event(Click,cmdLoc_Click)
+Gui.Form.cmdSave.Create(Button)
+Gui.Form.cmdSave.Enabled(True)
+Gui.Form.cmdSave.Visible(True)
+Gui.Form.cmdSave.Zorder(0)
+Gui.Form.cmdSave.Size(75,23)
+Gui.Form.cmdSave.Position(260,88)
+Gui.Form.cmdSave.Caption("Save")
+Gui.Form.cmdSave.FontName("Tahoma")
+Gui.Form.cmdSave.FontSize(8.25)
+Gui.Form.cmdSave.Parent("frame1")
+Gui.Form.cmdSave.Event(Click,cmdSave_Click)
+Gui.Form.lbl3.Create(Label,"Workcenter",True,56,13,0,5,80,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lbl3.BorderStyle(0)
+Gui.Form.lbl3.Parent("frame1")
+Gui.Form.txtWC.Create(TextBox,"",True,85,20,0,5,95,True,0,"Tahoma",8.25,,1)
+Gui.Form.txtWC.Parent("frame1")
+Gui.Form.cmdWC.Create(Button)
+Gui.Form.cmdWC.Enabled(True)
+Gui.Form.cmdWC.Visible(True)
+Gui.Form.cmdWC.Zorder(0)
+Gui.Form.cmdWC.Size(29,23)
+Gui.Form.cmdWC.Position(96,94)
+Gui.Form.cmdWC.Caption("")
+Gui.Form.cmdWC.FontName("Tahoma")
+Gui.Form.cmdWC.FontSize(8.25)
+Gui.Form.cmdWC.SvgPicture("icon_browser_color")
+Gui.Form.cmdWC.Parent("frame1")
+Gui.Form.cmdWC.Event(Click,cmdWC_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+v.Local.sRet.Declare
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+f.Intrinsic.Control.Try
+'Try something
+	'Load current
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.ODBC.Connection!con.ExecuteAndReturn("Select top 1 FileLoc from GCG_6866_Settings", v.Local.sRet)
+		gui.Form.txtLoc.Text(v.Local.sRet)
+		f.ODBC.Connection!con.ExecuteAndReturn("Select top 1 FileDest from GCG_6866_Settings", v.Local.sRet)
+		gui.Form.txtDest.Text(v.Local.sRet)
+		f.ODBC.Connection!con.ExecuteAndReturn("Select top 1 WC from GCG_6866_Settings", v.Local.sRet)
+		gui.Form.txtWC.Text(v.Local.sRet)
+	f.ODBC.Connection!con.Close	
+	gui.Form..Show
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Form_UnLoad.Start
+f.Intrinsic.Control.Try
+	'End Program.
+	f.Intrinsic.Control.End
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.cmdLoc_Click.Start
+v.Local.sRet.Declare
+f.Intrinsic.Control.Try
+	f.Intrinsic.UI.FolderBrowser("XML Location", , v.Local.sRet)
+	f.Intrinsic.Control.If(v.Local.sRet, <>, "***CANCEL***")
+		gui.Form.txtLoc.Text(v.Local.sRet)
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdLoc_Click.End
+
+Program.Sub.cmdDest_Click.Start
+v.Local.sRet.Declare
+f.Intrinsic.Control.Try
+	f.Intrinsic.UI.FolderBrowser("XML Location", , v.Local.sRet)
+	f.Intrinsic.Control.If(v.Local.sRet, <>, "***CANCEL***")
+		gui.Form.txtDest.Text(v.Local.sRet)
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdDest_Click.End
+
+Program.Sub.cmdSave_Click.Start
+v.Local.sLoc.Declare
+v.Local.sDest.Declare
+v.Local.sWC.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	v.Local.sLoc.Set(v.Screen.Form!txtLoc.Text)
+	v.Local.sDest.Set(v.Screen.Form!txtDest.Text)
+	v.Local.sWC.Set(v.Screen.Form!txtWC.Text)
+	'Check if empty
+	f.Intrinsic.Control.If(v.Local.sLoc.Trim, =, "")
+		f.Intrinsic.UI.Msgbox("Please select a XML Location.")
+	f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.If(v.Local.sDest.Trim, =, "")
+		f.Intrinsic.UI.Msgbox("Please select a XML Destination.")
+	f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.If(v.Local.sWC.Trim, =, "")
+		f.Intrinsic.UI.Msgbox("Please select a Workcenter.")
+	f.Intrinsic.Control.EndIf
+	'Delete and Save
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.ODBC.Connection!con.Execute("Delete From GCG_6866_Settings")
+		f.Intrinsic.String.Build("Insert into  GCG_6866_Settings (FileLoc, FileDest, WC) Values ('{0}', '{1}', '{2}')", v.Local.sLoc, v.Local.sDest, v.Local.sWC, v.Local.sSQL)
+		f.ODBC.Connection!con.Execute(v.Local.sSQL)
+	f.ODBC.Connection!con.Close
+	f.Intrinsic.UI.Msgbox("Save Complete.")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project GCG_6866_Roll_Settings.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
+
+Program.Sub.cmdWC_Click.Start
+v.Local.sRet.Declare
+f.Intrinsic.Control.Try
+	f.Intrinsic.UI.Browser(400, , v.Local.sRet)
+	f.Intrinsic.Control.If(v.Local.sRet, <>, "***CANCEL***")
+		f.Intrinsic.String.Split(v.Local.sRet, "*!*", v.Local.sRet)
+		gui.Form.txtWC.Text(v.Local.sRet(0))
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdWC_Click.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$aanazco$}$20220926220534478$}$7aQAV3Tor/tR9bkuakHbuzQlHVuXCGOzGmdH6wkpI9WA0dO7AYm5JMq3ydlhDSlBYFvNInJ9jlA=
+Program.Sub.Comments.End
